@@ -697,7 +697,7 @@ public class BatchModifyFilesDialogManager {
         });
     }
 
-    protected void setPreferredSize(){
+    private void setPreferredSize(){
         fileProcessBox.setPreferredSize(new Dimension(740 , fileProcessBox.getComponents().length * 30));
         pathBtn.setPreferredSize(new Dimension(20 , 20));
         pathPanel.setPreferredSize(new Dimension(740 , 30));
