@@ -117,6 +117,7 @@ public class WordShowPanel extends JPanel {
 
     private void firstSettings(){
         this.setLayout(new BorderLayout());
+        pageTextField.setEditable(false);
         pageTextField.setText(String.valueOf(orderIndex + 1));
         maxPageLabel.setText(" / " + maxPageNumber);
     }

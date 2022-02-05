@@ -154,6 +154,7 @@ public class WordEditPanel extends JPanel{
 
     private void firstSettings(){
         this.setLayout(new BorderLayout());
+        pageTextField.setEditable(false);
     }
 
     private void otherSettings(){
