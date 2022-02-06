@@ -47,6 +47,7 @@ public class Config {
                         "            <appSecret></appSecret>\n" +
                         "        </notFreeAPI>\n" +
                         "        <freeAPI/>\n" +
+                        "        <translationType>self</translationType>\n" +
                         "    </editWords>\n" +
                         "    <traverseWords>\n" +
                         "        <traverseType>random</traverseType>\n" +
@@ -110,6 +111,14 @@ public class Config {
 
     public static void setEnglishType(boolean isEnglishType){
         ROOT.element("reciteWords").element("pronunciationType").setText(isEnglishType ? "English" : "American");
+    }
+
+    public static void setSelfType(boolean isSelf){
+        ROOT.element("editWords").element("translationType").setText(isSelf ? "self" : "official");
+    }
+
+    public static boolean isSelfType(){
+        return "self".equals(ROOT.element("editWords").element("translationType").getText());
     }
 
     public static void writeSettings(){

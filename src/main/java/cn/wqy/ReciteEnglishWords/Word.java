@@ -36,8 +36,8 @@ public class Word {
         this.us_phonetic = result.getUs_phonetic();
         this.uk_speech_File = result.getUk_speech_File();
         this.us_speech_File = result.getUs_speech_File();
-        for (Object tran : result.getTranslation()) translation.add(tran.toString());
-        for (Object exp : result.getExplains()) explains.add(exp.toString());
+        if (result.getTranslation() != null) for (Object tran : result.getTranslation()) translation.add(tran.toString());
+        if (result.getExplains() != null) for (Object exp : result.getExplains()) explains.add(exp.toString());
     }
 
     public String getWord() {

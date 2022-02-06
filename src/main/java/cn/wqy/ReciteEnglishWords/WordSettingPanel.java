@@ -77,6 +77,22 @@ public class WordSettingPanel extends JPanel {
 
 
 
+    private final JPanel selfOrOfficialPanel = new JPanel();
+
+    private final ButtonGroup selfOrOfficialBtnGroup = new ButtonGroup();
+
+    private final JRadioButton selfDefinitionRadioBtn = new JRadioButton("默认自定义翻译" , true);
+
+    private final JRadioButton officialDefinitionRadioBtn = new JRadioButton("默认官方翻译");
+
+    {
+        MySwingUtils.add(selfOrOfficialBtnGroup , selfDefinitionRadioBtn , officialDefinitionRadioBtn);
+    }
+
+
+
+
+
 
 
     private final JPanel traverseWordPanel = new JPanel();
@@ -164,10 +180,11 @@ public class WordSettingPanel extends JPanel {
         rightPanel.add(rightBottomPanel , BorderLayout.SOUTH);
         MySwingUtils.add(rightTopPanel , editWordPanel);
         MySwingUtils.add(editWordPanel , editWordBox);
-        MySwingUtils.add(editWordBox , APIPanel , keyPanel , secretPanel);
+        MySwingUtils.add(editWordBox , APIPanel , keyPanel , secretPanel , selfOrOfficialPanel);
         MySwingUtils.add(APIPanel , notFreeAPIRadioBtn , freeAPIRadioBtn);
         MySwingUtils.add(keyPanel, keyLabel , keyTextField);
         MySwingUtils.add(secretPanel , secretLabel , secretTextField);
+        MySwingUtils.add(selfOrOfficialPanel , selfDefinitionRadioBtn , officialDefinitionRadioBtn);
         MySwingUtils.add(traverseWordPanel , traverseWordBox);
         MySwingUtils.add(traverseWordBox , randomOrOrderPanel);
         MySwingUtils.add(randomOrOrderPanel , randomRadioBtn , orderRadioBtn);
@@ -216,7 +233,10 @@ public class WordSettingPanel extends JPanel {
             rightTopPanel.validate();
         });
 
-        cancelBtn.addActionListener(e -> initSettings());
+        cancelBtn.addActionListener(e -> {
+            initSettings();
+            window.setVisible(false);
+        });
 
         saveBtn.addActionListener(e -> saveSettings());
 
@@ -234,6 +254,11 @@ public class WordSettingPanel extends JPanel {
         } else {
             notFreeAPIRadioBtn.setSelected(true);
         }
+        if (Config.isSelfType()){
+            selfDefinitionRadioBtn.setSelected(true);
+        }else {
+            officialDefinitionRadioBtn.setSelected(true);
+        }
         if (Config.isRandomTraverse()){
             randomRadioBtn.setSelected(true);
         }else {
@@ -247,6 +272,7 @@ public class WordSettingPanel extends JPanel {
 
     private void saveSettings(){
         Config.setFreeAPI(freeAPIRadioBtn.isSelected());
+        Config.setSelfType(selfDefinitionRadioBtn.isSelected());
         Config.setRandomTraverse(randomRadioBtn.isSelected());
         Config.setAppKey(keyTextField.getText().trim());
         Config.setAppSecret(secretTextField.getText().trim());

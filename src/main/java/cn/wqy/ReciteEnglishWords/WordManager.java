@@ -24,29 +24,17 @@ public class WordManager {
 
     private final JDialog traverseDialog;
 
-
-
-
-
     private final JDialog reciteDialog;
-
-
-
-
 
     private final ArrayList<WordShowPanel> wordShowPanels = new ArrayList<>();
 
+
+
+
+
     private final JDialog settingDialog;
 
-
-
-
-
-    private final WordSettingPanel settingPanel;
-
-
-
-
+    private final WordSettingPanel wordSettingPanel;
 
 
 
@@ -55,7 +43,7 @@ public class WordManager {
         traverseDialog = new JDialog(parentDialog , "遍历单词" , DOCUMENT_MODAL);
         reciteDialog = new JDialog(parentDialog , "背诵单词" , DOCUMENT_MODAL);
         settingDialog = new JDialog(parentDialog , "设置" , DOCUMENT_MODAL);
-        settingPanel = new WordSettingPanel(settingDialog);
+        wordSettingPanel = new WordSettingPanel(settingDialog);
         init();
     }
 
@@ -63,26 +51,7 @@ public class WordManager {
         defaultJDialogSetting();
         firstSettings();
         addComponents();
-        setListener();
-        otherSettings();
         setPreferredSize();
-    }
-
-    private void firstSettings(){
-        wordEditPanels.add(new WordEditPanel(editDialog,  wordEditPanels , words ,  0));
-    }
-
-    private void otherSettings(){
-
-    }
-
-    private void addComponents() {
-        MySwingUtils.add(editDialog , wordEditPanels.get(0));
-        MySwingUtils.add(settingDialog , settingPanel);
-    }
-
-    private void setListener(){
-
     }
 
     private void defaultJDialogSetting(){
@@ -94,6 +63,15 @@ public class WordManager {
         } catch (ClassNotFoundException | UnsupportedLookAndFeelException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    private void firstSettings(){
+        wordEditPanels.add(new WordEditPanel(editDialog,  wordEditPanels , words ,  0));
+    }
+
+    private void addComponents() {
+        MySwingUtils.add(editDialog , wordEditPanels.get(0));
+        MySwingUtils.add(settingDialog , wordSettingPanel);
     }
 
     private void setPreferredSize(){

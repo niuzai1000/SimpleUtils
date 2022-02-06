@@ -70,9 +70,18 @@ public class WordEditPanel extends JPanel{
 
     private final ButtonGroup explainButtonGroup = new ButtonGroup();
 
-    private final JRadioButton explainCheckBox = new JRadioButton("选用自定义翻译" , true);
+    private final JRadioButton explainRadioBtn = new JRadioButton("选用自定义翻译");
 
-    private final JRadioButton officialExplainCheckBox = new JRadioButton("选用官方翻译");
+    private final JRadioButton officialExplainRadioBtn = new JRadioButton("选用官方翻译");
+
+    {
+        if (Config.isSelfType()) {
+            explainRadioBtn.setSelected(true);
+        }
+        else {
+            officialExplainRadioBtn.setSelected(true);
+        }
+    }
 
 
 
@@ -154,13 +163,13 @@ public class WordEditPanel extends JPanel{
 
     private void firstSettings(){
         this.setLayout(new BorderLayout());
-        pageTextField.setEditable(false);
     }
 
     private void otherSettings(){
         MySwingUtils.setDefaultFonts(this);
         pronunciationEnglishLabel.setFont(new Font("Consolas" , Font.PLAIN , 14));
         pronunciationAmericanLabel.setFont(new Font("Consolas" , Font.PLAIN , 14));
+        pageTextField.setEditable(false);
         officialExplainTextArea.setEditable(false);
         saveBtn.setToolTipText("新建单词时自动保存");
         updatePageNumber();
@@ -172,8 +181,8 @@ public class WordEditPanel extends JPanel{
         MySwingUtils.add(wordTextFieldPanel , wordTextField , searchBtn);
         MySwingUtils.add(pronunciationEnglishPanel , pronunciationEnglishBtn , pronunciationEnglishLabel);
         MySwingUtils.add(pronunciationAmericanPanel , pronunciationAmericanBtn , pronunciationAmericanLabel);
-        MySwingUtils.add(officialExplainOrExplainPanel , explainCheckBox, officialExplainCheckBox);
-        MySwingUtils.add(explainButtonGroup , explainCheckBox, officialExplainCheckBox);
+        MySwingUtils.add(officialExplainOrExplainPanel , explainRadioBtn, officialExplainRadioBtn);
+        MySwingUtils.add(explainButtonGroup , explainRadioBtn, officialExplainRadioBtn);
         MySwingUtils.add(explainTextFieldPanel , explainTextField);
         MySwingUtils.add(officialExplainTextAreaPanel , officialExplainScrollPane);
         MySwingUtils.add(savePanel, saveBtn);
@@ -244,7 +253,6 @@ public class WordEditPanel extends JPanel{
         });
 
         previousBtn.addActionListener(e -> {
-            System.out.println("Test begins");
             if (index != 0) editPrevious();
             else if ("".equals(wordTextField.getText().trim())) InformationDialog.INFO_DIALOG.showInfo("请输入单词" , () -> {
                 try {
@@ -292,7 +300,7 @@ public class WordEditPanel extends JPanel{
 
     protected void save(Task task){
         if (!"".equals(wordTextField.getText().trim())){
-            if (officialExplainCheckBox.isSelected()){
+            if (officialExplainRadioBtn.isSelected()){
                 if (result != null && result.getErrorCode() == 0){
                     word = new Word(wordTextField.getText().trim() , result);
                     if (task != null) task.conduct();
@@ -305,7 +313,7 @@ public class WordEditPanel extends JPanel{
                         }
                     });
                 }
-            }else if (explainCheckBox.isSelected()){
+            }else if (explainRadioBtn.isSelected()){
                 if (!"".equals(explainTextField.getText().trim())){
                     InformationDialog.INFO_DIALOG.showInfo("正在搜索音频中..." , () -> {
                         try {
