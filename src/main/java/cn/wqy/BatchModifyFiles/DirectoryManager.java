@@ -7,7 +7,6 @@ import cn.wqy.SwingUtils.MySwingUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -96,7 +95,7 @@ public class DirectoryManager {
                     InformationDialog.INFO_DIALOG.setInfo("正在处理" + file.getAbsolutePath().replace(rootPath , "") + "文件中...");
                     try {
                         MyIOUtils.copyFile(file, new File(parentPath + '\\' + file.getName()));
-                    } catch (FileNotFoundException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }

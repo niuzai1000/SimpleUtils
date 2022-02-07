@@ -572,8 +572,8 @@ public class BatchModifyFilesDialogManager {
                         File newFile = new File(oldFile.getAbsolutePath().replace(oldAbsolutePath , newAbsolutePath));
                         try {
                             MyIOUtils.copyFile(oldFile , newFile);
-                        } catch (FileNotFoundException fileNotFoundException) {
-                            fileNotFoundException.printStackTrace();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
                         }
                     }
                 }
@@ -684,7 +684,7 @@ public class BatchModifyFilesDialogManager {
 
     private void addChoosePathListener(JButton btn, JTextField textField) {
         btn.addActionListener(e -> {
-            File selectedFile = new File(pathTextField.getText());
+            File selectedFile = new File(textField.getText());
             if (!selectedFile.exists()) selectedFile = new File(System.getProperty("java.class.path").split(";")[0]).getParentFile();
             JFileChooser chooser = new JFileChooser(selectedFile);
             MySwingUtils.setDefaultFonts(chooser);

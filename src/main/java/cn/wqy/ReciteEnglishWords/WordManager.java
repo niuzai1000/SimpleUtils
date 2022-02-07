@@ -1,12 +1,19 @@
 package cn.wqy.ReciteEnglishWords;
 
+import cn.wqy.IOUtils.MyIOUtils;
 import cn.wqy.InformationDialog;
+import cn.wqy.ReciteEnglishWords.SearchWordOnline.Search;
+import cn.wqy.ReciteEnglishWords.SearchWordOnline.SearchResult;
 import cn.wqy.SwingUtils.MySwingUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Random;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import static java.awt.Dialog.ModalityType.DOCUMENT_MODAL;
 
@@ -32,6 +39,14 @@ public class WordManager {
 
 
 
+    private final JDialog importDialog;
+
+    private final WordImportPanel wordImportPanel;
+
+
+
+
+
     private final JDialog settingDialog;
 
     private final WordSettingPanel wordSettingPanel;
@@ -42,7 +57,9 @@ public class WordManager {
         editDialog = new JDialog(parentDialog , "编辑单词" , DOCUMENT_MODAL);
         traverseDialog = new JDialog(parentDialog , "遍历单词" , DOCUMENT_MODAL);
         reciteDialog = new JDialog(parentDialog , "背诵单词" , DOCUMENT_MODAL);
+        importDialog = new JDialog(parentDialog , "导入单词" , DOCUMENT_MODAL);
         settingDialog = new JDialog(parentDialog , "设置" , DOCUMENT_MODAL);
+        wordImportPanel = new WordImportPanel(importDialog);
         wordSettingPanel = new WordSettingPanel(settingDialog);
         init();
     }
@@ -59,6 +76,7 @@ public class WordManager {
             MySwingUtils.defaultJDialogSetting(editDialog);
             MySwingUtils.defaultJDialogSetting(traverseDialog);
             MySwingUtils.defaultJDialogSetting(reciteDialog);
+            MySwingUtils.defaultJDialogSetting(importDialog);
             MySwingUtils.defaultJDialogSetting(settingDialog);
         } catch (ClassNotFoundException | UnsupportedLookAndFeelException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
@@ -71,6 +89,7 @@ public class WordManager {
 
     private void addComponents() {
         MySwingUtils.add(editDialog , wordEditPanels.get(0));
+        MySwingUtils.add(importDialog , wordImportPanel);
         MySwingUtils.add(settingDialog , wordSettingPanel);
     }
 
@@ -78,6 +97,7 @@ public class WordManager {
         editDialog.setSize(new Dimension(380 , 515));
         traverseDialog.setSize(new Dimension(380 , 515));
         reciteDialog.setSize(new Dimension(380 , 515));
+        importDialog.setSize(new Dimension(380 , 150));
     }
 
     private void initWordShowPanel(boolean isTraverse) {
@@ -151,6 +171,52 @@ public class WordManager {
         }
         initWordShowPanel(false);
         MySwingUtils.setCenterAndVisible(reciteDialog);
+    }
+
+    public void importWords(){
+        MySwingUtils.setCenterAndVisible(importDialog);
+        if (!wordImportPanel.isLegal()) return;
+        InformationDialog.INFO_DIALOG.showInfo("正在导入单词..." , () -> {
+            File importFile = wordImportPanel.getFile();
+            Properties properties = new Properties();
+            ArrayList<Word> words = new ArrayList<>();
+            FileInputStream fis = null;
+            InputStreamReader isr = null;
+            try {
+                fis = new FileInputStream(importFile);
+                isr = new InputStreamReader(fis , StandardCharsets.UTF_8);
+                properties.load(isr);
+                Set<Map.Entry<Object , Object>> wordAndTranslationSet = properties.entrySet();
+                for (Map.Entry<Object , Object> entry : wordAndTranslationSet){
+                    SearchResult result = Search.search(entry.getKey().toString().trim() , true);
+                    ArrayList<String> translation = new ArrayList<>(Arrays.asList(entry.getValue().toString().trim().split(";")));
+                    words.add(new Word(entry.getKey().toString().trim() , translation , result.getUk_speech_File() , result.getUs_speech_File()));
+                }
+                this.words.clear();
+                this.words.addAll(words);
+                InformationDialog.INFO_DIALOG.setInfo("导入成功");
+            } catch (IOException e) {
+                e.printStackTrace();
+                InformationDialog.INFO_DIALOG.setInfo("导入失败");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            } finally {
+                try {
+                    MyIOUtils.close(fis);
+                    MyIOUtils.close(isr);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (!importFile.delete()) try {
+                    throw new IOException("无法删除properties文件");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public void setting(){

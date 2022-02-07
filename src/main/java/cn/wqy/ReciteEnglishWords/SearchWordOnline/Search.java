@@ -99,8 +99,7 @@ public class Search {
                 ex.printStackTrace();
             }
             return null;
-        }
-        finally {
+        }finally {
             try{
                 if(httpResponse!=null){
                     httpResponse.close();

@@ -31,6 +31,8 @@ public class ReciteEnglishWordsDialogManager{
 
     public final JButton reciteWordBtn = new JButton("背诵单词");
 
+    public final JButton importBtn = new JButton("导入单词");
+
     public final JButton settingBtn = new JButton("设置");
 
 
@@ -68,7 +70,7 @@ public class ReciteEnglishWordsDialogManager{
     protected void addComponents() {
         MySwingUtils.add(dialog , box);
         MySwingUtils.add(box , btnPanel);
-        MySwingUtils.add(btnPanel , editWordBtn , traverseWordBtn , reciteWordBtn , settingBtn);
+        MySwingUtils.add(btnPanel , editWordBtn , traverseWordBtn , reciteWordBtn , importBtn , settingBtn);
     }
 
     protected void setListener() {
@@ -91,6 +93,8 @@ public class ReciteEnglishWordsDialogManager{
         traverseWordBtn.addActionListener(e -> wordManager.traverseWords());
 
         reciteWordBtn.addActionListener(e -> wordManager.reciteWords());
+
+        importBtn.addActionListener(e -> wordManager.importWords());
 
         settingBtn.addActionListener(e -> wordManager.setting());
 
