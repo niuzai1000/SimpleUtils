@@ -1,6 +1,5 @@
 package cn.wqy.ReciteEnglishWords;
 
-import cn.wqy.IOUtils.MyIOUtils;
 import cn.wqy.InformationDialog;
 import cn.wqy.SwingUtils.MySwingUtils;
 
@@ -9,8 +8,6 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static javax.swing.JFileChooser.FILES_ONLY;
 
@@ -108,7 +105,7 @@ public class WordImportPanel extends JPanel{
             }
         });
         btn.addActionListener(e -> {
-            File importFile = new File(textField.getText().trim());
+            importFile = new File(textField.getText().trim());
             if (!importFile.exists()) {
                 InformationDialog.INFO_DIALOG.showInfo("导入文件不存在", () -> {
                     try {
@@ -128,12 +125,6 @@ public class WordImportPanel extends JPanel{
                     }
                 });
                 return;
-            }
-            this.importFile = new File(importFile.getAbsolutePath().replace(".txt" , ".properties"));
-            try {
-                MyIOUtils.copyTextFile(importFile , this.importFile , StandardCharsets.UTF_8);
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
             legal = true;
             window.setVisible(false);

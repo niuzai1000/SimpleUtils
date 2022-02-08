@@ -11,9 +11,13 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.regex.Pattern;
 
 import static java.awt.Dialog.ModalityType.DOCUMENT_MODAL;
 
@@ -178,19 +182,22 @@ public class WordManager {
         if (!wordImportPanel.isLegal()) return;
         InformationDialog.INFO_DIALOG.showInfo("正在导入单词..." , () -> {
             File importFile = wordImportPanel.getFile();
-            Properties properties = new Properties();
             ArrayList<Word> words = new ArrayList<>();
             FileInputStream fis = null;
-            InputStreamReader isr = null;
             try {
                 fis = new FileInputStream(importFile);
-                isr = new InputStreamReader(fis , StandardCharsets.UTF_8);
-                properties.load(isr);
-                Set<Map.Entry<Object , Object>> wordAndTranslationSet = properties.entrySet();
-                for (Map.Entry<Object , Object> entry : wordAndTranslationSet){
-                    SearchResult result = Search.search(entry.getKey().toString().trim() , true);
-                    ArrayList<String> translation = new ArrayList<>(Arrays.asList(entry.getValue().toString().trim().split(";")));
-                    words.add(new Word(entry.getKey().toString().trim() , translation , result.getUk_speech_File() , result.getUs_speech_File()));
+                List<String> content = Files.readAllLines(Paths.get(importFile.toURI()) , MyIOUtils.getFileCharset(importFile));
+                Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z\\s.']*=[\\u4E00-\\u9FA5A-Za-z0-9;.]+$");
+                for (String lineString : content){
+                    if (pattern.matcher(lineString).matches()){
+                        String word = lineString.split("=")[0];
+                        ArrayList<String> translation = new ArrayList<>(Arrays.asList(lineString.split("=")[1].split(";")));
+                        InformationDialog.INFO_DIALOG.setInfo("正在导入 " + word + " 中");
+                        System.out.println(word);
+                        System.out.println(Arrays.toString(translation.toArray()));
+                        SearchResult result = Search.search(word , true);
+                        words.add(new Word(word , translation , result.getUk_speech_File() , result.getUs_speech_File()));
+                    }
                 }
                 this.words.clear();
                 this.words.addAll(words);
@@ -206,12 +213,6 @@ public class WordManager {
             } finally {
                 try {
                     MyIOUtils.close(fis);
-                    MyIOUtils.close(isr);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (!importFile.delete()) try {
-                    throw new IOException("无法删除properties文件");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
