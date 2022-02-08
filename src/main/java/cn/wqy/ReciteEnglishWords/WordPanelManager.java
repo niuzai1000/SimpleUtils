@@ -1,27 +1,16 @@
 package cn.wqy.ReciteEnglishWords;
 
-import cn.wqy.IOUtils.MyIOUtils;
 import cn.wqy.InformationDialog;
-import cn.wqy.ReciteEnglishWords.SearchWordOnline.Search;
-import cn.wqy.ReciteEnglishWords.SearchWordOnline.SearchResult;
 import cn.wqy.SwingUtils.MySwingUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
-import java.util.regex.Pattern;
 
 import static java.awt.Dialog.ModalityType.DOCUMENT_MODAL;
 
-public class WordManager {
+public class WordPanelManager {
 
     private final JDialog editDialog;
 
@@ -57,13 +46,13 @@ public class WordManager {
 
 
 
-    public WordManager(JDialog parentDialog) {
+    public WordPanelManager(JDialog parentDialog) {
         editDialog = new JDialog(parentDialog , "编辑单词" , DOCUMENT_MODAL);
         traverseDialog = new JDialog(parentDialog , "遍历单词" , DOCUMENT_MODAL);
         reciteDialog = new JDialog(parentDialog , "背诵单词" , DOCUMENT_MODAL);
         importDialog = new JDialog(parentDialog , "导入单词" , DOCUMENT_MODAL);
         settingDialog = new JDialog(parentDialog , "设置" , DOCUMENT_MODAL);
-        wordImportPanel = new WordImportPanel(importDialog);
+        wordImportPanel = new WordImportPanel(importDialog , words);
         wordSettingPanel = new WordSettingPanel(settingDialog);
         init();
     }
@@ -179,45 +168,6 @@ public class WordManager {
 
     public void importWords(){
         MySwingUtils.setCenterAndVisible(importDialog);
-        if (!wordImportPanel.isLegal()) return;
-        InformationDialog.INFO_DIALOG.showInfo("正在导入单词..." , () -> {
-            File importFile = wordImportPanel.getFile();
-            ArrayList<Word> words = new ArrayList<>();
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(importFile);
-                List<String> content = Files.readAllLines(Paths.get(importFile.toURI()) , MyIOUtils.getFileCharset(importFile));
-                Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z\\s.']*=[\\u4E00-\\u9FA5A-Za-z0-9;.]+$");
-                for (String lineString : content){
-                    if (pattern.matcher(lineString).matches()){
-                        String word = lineString.split("=")[0];
-                        ArrayList<String> translation = new ArrayList<>(Arrays.asList(lineString.split("=")[1].split(";")));
-                        InformationDialog.INFO_DIALOG.setInfo("正在导入 " + word + " 中");
-                        System.out.println(word);
-                        System.out.println(Arrays.toString(translation.toArray()));
-                        SearchResult result = Search.search(word , true);
-                        words.add(new Word(word , translation , result.getUk_speech_File() , result.getUs_speech_File()));
-                    }
-                }
-                this.words.clear();
-                this.words.addAll(words);
-                InformationDialog.INFO_DIALOG.setInfo("导入成功");
-            } catch (IOException e) {
-                e.printStackTrace();
-                InformationDialog.INFO_DIALOG.setInfo("导入失败");
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-            } finally {
-                try {
-                    MyIOUtils.close(fis);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
     }
 
     public void setting(){

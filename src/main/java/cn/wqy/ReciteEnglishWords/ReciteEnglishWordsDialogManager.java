@@ -39,14 +39,14 @@ public class ReciteEnglishWordsDialogManager{
 
 
 
-    public final WordManager wordManager;
+    public final WordPanelManager wordPanelManager;
 
 
 
 
     public ReciteEnglishWordsDialogManager(JFrame jFrame) {
         dialog = new JDialog(jFrame , "背诵英语单词工具" , DOCUMENT_MODAL);
-        wordManager = new WordManager(dialog);
+        wordPanelManager = new WordPanelManager(dialog);
     }
 
     public void openDialog(){
@@ -88,15 +88,15 @@ public class ReciteEnglishWordsDialogManager{
             }
         });
 
-        editWordBtn.addActionListener(e -> wordManager.editWords());
+        editWordBtn.addActionListener(e -> wordPanelManager.editWords());
 
-        traverseWordBtn.addActionListener(e -> wordManager.traverseWords());
+        traverseWordBtn.addActionListener(e -> wordPanelManager.traverseWords());
 
-        reciteWordBtn.addActionListener(e -> wordManager.reciteWords());
+        reciteWordBtn.addActionListener(e -> wordPanelManager.reciteWords());
 
-        importBtn.addActionListener(e -> wordManager.importWords());
+        importBtn.addActionListener(e -> wordPanelManager.importWords());
 
-        settingBtn.addActionListener(e -> wordManager.setting());
+        settingBtn.addActionListener(e -> wordPanelManager.setting());
 
 
     }

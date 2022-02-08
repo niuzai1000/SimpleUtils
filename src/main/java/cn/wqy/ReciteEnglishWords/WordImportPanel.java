@@ -1,13 +1,23 @@
 package cn.wqy.ReciteEnglishWords;
 
+import cn.wqy.IOUtils.MyIOUtils;
 import cn.wqy.InformationDialog;
+import cn.wqy.ReciteEnglishWords.SearchWordOnline.Search;
+import cn.wqy.ReciteEnglishWords.SearchWordOnline.SearchResult;
 import cn.wqy.SwingUtils.MySwingUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import static javax.swing.JFileChooser.FILES_ONLY;
 
@@ -15,9 +25,7 @@ public class WordImportPanel extends JPanel{
 
     private final JDialog window;
 
-    private boolean legal = false;
-
-    private File importFile = null;
+    private final ArrayList<Word> words;
 
 
 
@@ -55,8 +63,9 @@ public class WordImportPanel extends JPanel{
 
 
 
-    public WordImportPanel(JDialog window) {
+    public WordImportPanel(JDialog window , ArrayList<Word> words) {
         this.window = window;
+        this.words = words;
         init();
     }
 
@@ -81,23 +90,23 @@ public class WordImportPanel extends JPanel{
     }
 
     private void setListener(){
-        window.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowOpened(WindowEvent e) {
-                legal = false;
-            }
-
-            @Override
-            public void windowClosing(WindowEvent e) {
-                legal = false;
-            }
-        });
         pathChooseBtn.addActionListener(e -> {
             File selectedFile = new File(textField.getText());
             if (!selectedFile.exists()) selectedFile = new File(System.getProperty("java.class.path").split(";")[0]).getParentFile();
             JFileChooser chooser = new JFileChooser(selectedFile);
             MySwingUtils.setDefaultFonts(chooser);
             chooser.setFileSelectionMode(FILES_ONLY);
+            chooser.setFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return f.getName().endsWith(".txt") || f.isDirectory();
+                }
+
+                @Override
+                public String getDescription() {
+                    return "txt文件(*.txt)";
+                }
+            });
             chooser.showOpenDialog(window);
             File file = chooser.getSelectedFile();
             if (file != null && file.exists()){
@@ -105,7 +114,7 @@ public class WordImportPanel extends JPanel{
             }
         });
         btn.addActionListener(e -> {
-            importFile = new File(textField.getText().trim());
+            File importFile = new File(textField.getText().trim());
             if (!importFile.exists()) {
                 InformationDialog.INFO_DIALOG.showInfo("导入文件不存在", () -> {
                     try {
@@ -126,7 +135,43 @@ public class WordImportPanel extends JPanel{
                 });
                 return;
             }
-            legal = true;
+            InformationDialog.INFO_DIALOG.showInfo("正在导入单词..." , () -> {
+                ArrayList<Word> words = new ArrayList<>();
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(importFile);
+                    List<String> content = Files.readAllLines(Paths.get(importFile.toURI()) , MyIOUtils.getFileCharset(importFile));
+                    Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z\\s.']*=[\\u4E00-\\u9FA5A-Za-z0-9;.,\\s]+$");
+                    for (String lineString : content){
+                        if (pattern.matcher(lineString).matches()){
+                            String word = lineString.split("=")[0];
+                            ArrayList<String> translation = new ArrayList<>(Arrays.asList(lineString.split("=")[1].split(";")));
+                            InformationDialog.INFO_DIALOG.setInfo("正在导入 " + word + " 中");
+                            System.out.println(word);
+                            System.out.println(Arrays.toString(translation.toArray()));
+                            SearchResult result = Search.search(word , true);
+                            words.add(new Word(word , translation , result.getUk_speech_File() , result.getUs_speech_File()));
+                        }
+                    }
+                    this.words.clear();
+                    this.words.addAll(words);
+                    InformationDialog.INFO_DIALOG.setInfo("导入成功");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    InformationDialog.INFO_DIALOG.setInfo("导入失败");
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException exception) {
+                        exception.printStackTrace();
+                    }
+                } finally {
+                    try {
+                        MyIOUtils.close(fis);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
             window.setVisible(false);
         });
     }
@@ -138,14 +183,6 @@ public class WordImportPanel extends JPanel{
 
     private void otherSettings(){
         MySwingUtils.setDefaultFonts(this);
-    }
-
-    public boolean isLegal(){
-        return legal;
-    }
-
-    public File getFile(){
-        return importFile;
     }
 
 }
