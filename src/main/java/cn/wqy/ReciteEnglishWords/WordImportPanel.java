@@ -12,6 +12,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -140,15 +141,13 @@ public class WordImportPanel extends JPanel{
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(importFile);
-                    List<String> content = Files.readAllLines(Paths.get(importFile.toURI()) , MyIOUtils.getFileCharset(importFile));
-                    Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z\\s.']*=[\\u4E00-\\u9FA5A-Za-z0-9;.,\\s]+$");
+                    List<String> content = Files.readAllLines(Paths.get(importFile.toURI()) , StandardCharsets.UTF_8);
+                    Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z\\s.'()]*=[\\u4E00-\\u9FA5A-Za-z0-9;.,\\s()]+$");
                     for (String lineString : content){
                         if (pattern.matcher(lineString).matches()){
                             String word = lineString.split("=")[0];
                             ArrayList<String> translation = new ArrayList<>(Arrays.asList(lineString.split("=")[1].split(";")));
                             InformationDialog.INFO_DIALOG.setInfo("正在导入 " + word + " 中");
-                            System.out.println(word);
-                            System.out.println(Arrays.toString(translation.toArray()));
                             SearchResult result = Search.search(word , true);
                             words.add(new Word(word , translation , result.getUk_speech_File() , result.getUs_speech_File()));
                         }
@@ -158,7 +157,7 @@ public class WordImportPanel extends JPanel{
                     InformationDialog.INFO_DIALOG.setInfo("导入成功");
                 } catch (IOException ex) {
                     ex.printStackTrace();
-                    InformationDialog.INFO_DIALOG.setInfo("导入失败");
+                    InformationDialog.INFO_DIALOG.setInfo("导入失败，可能是因为不是UTF-8编码");
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException exception) {
