@@ -142,7 +142,7 @@ public class WordImportPanel extends JPanel{
                 try {
                     fis = new FileInputStream(importFile);
                     List<String> content = Files.readAllLines(Paths.get(importFile.toURI()) , StandardCharsets.UTF_8);
-                    Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z\\s.'()]*=[\\u4E00-\\u9FA5A-Za-z0-9;.,\\s()]+$");
+                    Pattern pattern = Pattern.compile("^\\s*[a-zA-Z][a-zA-Z\\s.'()/]*=[\\u4E00-\\u9FA5A-Za-z0-9;.,\\s()/]+$");
                     for (String lineString : content){
                         if (pattern.matcher(lineString).matches()){
                             String word = lineString.split("=")[0];

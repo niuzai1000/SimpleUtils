@@ -205,7 +205,7 @@ public class WordEditPanel extends JPanel{
                         ex.printStackTrace();
                     }
                     if (result == null) return;
-                    officialExplainTextArea.setText("");
+                    reset();
                     JSONArray translation = result.getTranslation();
                     JSONArray explains = result.getExplains();
                     InformationDialog.INFO_DIALOG.setInfo("设置官方翻译中...");
@@ -233,9 +233,7 @@ public class WordEditPanel extends JPanel{
                     }
                     InformationDialog.INFO_DIALOG.setInfo("设置音标中...");
                     if (result.getUk_phonetic() != null) pronunciationEnglishLabel.setText('/' + result.getUk_phonetic() + '/');
-                    else pronunciationEnglishLabel.setText("");
                     if (result.getUs_phonetic() != null) pronunciationAmericanLabel.setText('/' + result.getUs_phonetic() + '/');
-                    else pronunciationAmericanLabel.setText("");
                 });
             }
         });
@@ -298,7 +296,8 @@ public class WordEditPanel extends JPanel{
 
     }
 
-    protected void save(Task task){
+    private void save(Task task){
+        reset();
         if (!"".equals(wordTextField.getText().trim())){
             if (officialExplainRadioBtn.isSelected()){
                 if (result != null && result.getErrorCode() == 0){
@@ -343,21 +342,15 @@ public class WordEditPanel extends JPanel{
         }
     }
 
-    protected void updatePageNumber(){
+    private void reset(){
+        pronunciationEnglishLabel.setText("");
+        pronunciationAmericanLabel.setText("");
+        officialExplainTextArea.setText("");
+    }
+
+    private void updatePageNumber(){
         pageTextField.setText(String.valueOf(index + 1));
         maxPageLabel.setText(" / " + maxPageNumber);
-    }
-
-    public void addIndex(int addValue) {
-        this.index += addValue;
-    }
-
-    public Word getWord() {
-        return word;
-    }
-
-    public void setMaxPageNumber(int maxPageNumber) {
-        this.maxPageNumber = maxPageNumber;
     }
 
     private void editNext(){
@@ -365,7 +358,7 @@ public class WordEditPanel extends JPanel{
             wordEditPanels.add(new WordEditPanel(window, wordEditPanels , words , wordEditPanels.size()));
         }
         for (WordEditPanel panel : wordEditPanels) {
-            panel.setMaxPageNumber(wordEditPanels.size());
+            panel.maxPageNumber = wordEditPanels.size();
             panel.updatePageNumber();
         }
         window.remove(wordEditPanels.get(index));
@@ -391,14 +384,14 @@ public class WordEditPanel extends JPanel{
         wordEditPanels.remove(index);
         if (index != wordEditPanels.size()){
             for (int i = index ; i < wordEditPanels.size() ; i++){
-                wordEditPanels.get(i).addIndex(-1);
+                wordEditPanels.get(i).index -= 1;
             }
             window.add(wordEditPanels.get(index));
         } else {
             window.add(wordEditPanels.get(wordEditPanels.size() - 1));
         }
         for (WordEditPanel panel : wordEditPanels) {
-            panel.setMaxPageNumber(wordEditPanels.size());
+            panel.maxPageNumber = wordEditPanels.size();
             panel.updatePageNumber();
         }
         window.repaint();
@@ -412,7 +405,7 @@ public class WordEditPanel extends JPanel{
         wordEditPanels.get(wordEditPanels.size() - 1).save(() -> legal.set(true));
         if (legal.get()){
             words.clear();
-            for (WordEditPanel panel : wordEditPanels) words.add(panel.getWord());
+            for (WordEditPanel panel : wordEditPanels) words.add(panel.word);
             window.setVisible(false);
         }
     }
