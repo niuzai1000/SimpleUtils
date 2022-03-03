@@ -1,2 +1,3 @@
 # SimpleUtils
-一个java编译的简单工具
+
+一个java语言的简单工具软件
