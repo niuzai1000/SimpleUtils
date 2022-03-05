@@ -108,13 +108,13 @@ public class BatchModifyFilesDialogManager {
 
     public JPanel movePanelExtra = new JPanel();
 
-    public JLabel moveLabel2 = new JLabel("                                  ");
-
     public JCheckBox moveCaseCheckBox = new JCheckBox("区分大小写" , true);
 
     public JCheckBox onlyRootPathFileCheckBox = new JCheckBox("处理根目录文件" , true);
 
     public JCheckBox onlyRootPathDirectoryCheckBox = new JCheckBox("处理根目录文件夹" , true);
+
+    public JCheckBox saveRootDirCheckBox = new JCheckBox("保留根目录文件夹" , false);
 
 
 
@@ -286,11 +286,11 @@ public class BatchModifyFilesDialogManager {
                 , moveNonContainLabel
                 , moveNonContainTextField);
         MySwingUtils.add(movePanelExtra
-                , moveLabel2
                 , moveCaseCheckBox
                 , onlyRootPathFileCheckBox
                 , onlyRootPathFileCheckBox
-                , onlyRootPathDirectoryCheckBox);
+                , onlyRootPathDirectoryCheckBox
+                , saveRootDirCheckBox);
         MySwingUtils.add(movePanel2
                 , movePathLabel
                 , movePathTextField
@@ -335,7 +335,6 @@ public class BatchModifyFilesDialogManager {
         reSuffixPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
         reSuffixPanel2.setLayout(new FlowLayout(FlowLayout.LEFT));
         movePanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
-        movePanelExtra.setLayout(new FlowLayout(FlowLayout.LEFT));
         movePanel2.setLayout(new FlowLayout(FlowLayout.LEFT));
         movePanel3.setLayout(new FlowLayout(FlowLayout.LEFT));
         movePanel4.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -571,7 +570,7 @@ public class BatchModifyFilesDialogManager {
                     if (fileName.contains(contain) && ("".equals(nonContain) || !fileName.contains(nonContain))){
                         File newFile = new File(oldFile.getAbsolutePath().replace(oldAbsolutePath , newAbsolutePath));
                         try {
-                            MyIOUtils.copyFile(oldFile , newFile);
+                            MyIOUtils.copyFile(oldFile , newFile , saveRootDirCheckBox.isSelected());
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
@@ -584,7 +583,7 @@ public class BatchModifyFilesDialogManager {
                     if (fileName.contains(contain) && ("".equals(nonContain) || !fileName.contains(nonContain))){
                         File newFile = new File(oldFile.getAbsolutePath().replace(oldAbsolutePath , newAbsolutePath));
                         try {
-                            MyIOUtils.copyFolder(oldFile , newFile);
+                            MyIOUtils.copyFile(oldFile , newFile , saveRootDirCheckBox.isSelected());
                         } catch (IOException exception) {
                             exception.printStackTrace();
                         }
@@ -628,7 +627,7 @@ public class BatchModifyFilesDialogManager {
                     if (toLowerCase) fileName = fileName.toLowerCase();
                     if (fileName.contains(contain) && ("".equals(nonContain) || !fileName.contains(nonContain))){
                         try {
-                            MyIOUtils.deleteFolder(file);
+                            MyIOUtils.deleteFile(file , saveRootDirCheckBox.isSelected());
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }

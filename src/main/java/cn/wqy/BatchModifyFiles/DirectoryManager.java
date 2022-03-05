@@ -102,7 +102,7 @@ public class DirectoryManager {
                 else if (file.isDirectory()) {
                     InformationDialog.INFO_DIALOG.setInfo("正在处理" + file.getAbsolutePath().replace(rootPath , "") + "文件夹中...");
                     try {
-                        MyIOUtils.copyFolder(file , new File(parentPath + '\\' + file.getName()));
+                        MyIOUtils.copyFile(file , new File(parentPath + '\\' + file.getName()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -122,7 +122,7 @@ public class DirectoryManager {
                 }else if (file.isDirectory()) {
                     InformationDialog.INFO_DIALOG.setInfo("正在处理" + file.getAbsolutePath().replace(rootPath , "") + "文件夹中...");
                     try {
-                        MyIOUtils.deleteFolder(file);
+                        MyIOUtils.deleteFile(file);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
