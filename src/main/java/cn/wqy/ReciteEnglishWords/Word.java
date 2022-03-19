@@ -1,7 +1,5 @@
 package cn.wqy.ReciteEnglishWords;
 
-import cn.wqy.ReciteEnglishWords.SearchWordOnline.SearchResult;
-
 import java.io.File;
 import java.util.ArrayList;
 

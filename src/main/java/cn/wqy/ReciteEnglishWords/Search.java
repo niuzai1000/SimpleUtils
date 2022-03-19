@@ -1,7 +1,6 @@
-package cn.wqy.ReciteEnglishWords.SearchWordOnline;
+package cn.wqy.ReciteEnglishWords;
 
 import cn.wqy.InformationDialog;
-import cn.wqy.ReciteEnglishWords.Config;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;

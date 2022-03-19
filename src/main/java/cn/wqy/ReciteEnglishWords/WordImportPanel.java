@@ -2,8 +2,6 @@ package cn.wqy.ReciteEnglishWords;
 
 import cn.wqy.IOUtils.MyIOUtils;
 import cn.wqy.InformationDialog;
-import cn.wqy.ReciteEnglishWords.SearchWordOnline.Search;
-import cn.wqy.ReciteEnglishWords.SearchWordOnline.SearchResult;
 import cn.wqy.SwingUtils.MySwingUtils;
 
 import javax.swing.*;

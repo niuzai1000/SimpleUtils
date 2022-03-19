@@ -1,4 +1,4 @@
-package cn.wqy.ReciteEnglishWords.SearchWordOnline;
+package cn.wqy.ReciteEnglishWords;
 
 import cn.wqy.IOUtils.MyIOUtils;
 import cn.wqy.InformationDialog;

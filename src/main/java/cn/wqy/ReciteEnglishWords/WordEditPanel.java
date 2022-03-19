@@ -1,8 +1,6 @@
 package cn.wqy.ReciteEnglishWords;
 
 import cn.wqy.InformationDialog;
-import cn.wqy.ReciteEnglishWords.SearchWordOnline.Search;
-import cn.wqy.ReciteEnglishWords.SearchWordOnline.SearchResult;
 import cn.wqy.SwingUtils.MySwingUtils;
 import cn.wqy.Task;
 import org.json.JSONArray;
