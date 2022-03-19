@@ -670,11 +670,41 @@ public class BatchModifyFilesDialogManager {
             }
         });
 
-        complexModifyFileMoveBtn.addActionListener(e -> InformationDialog.INFO_DIALOG.showInfo("正在处理文件中..." , () -> complexModifyFileDirectoryManager.moveFiles(complexModifyFileMovePathTextField.getText())));
+        complexModifyFileMoveBtn.addActionListener(e -> InformationDialog.INFO_DIALOG.showInfo("正在处理文件中..." , () -> {
+            if (complexModifyFileDirectoryManager != null) complexModifyFileDirectoryManager.moveFiles(complexModifyFileMovePathTextField.getText());
+            else {
+                try {
+                    InformationDialog.INFO_DIALOG.setInfo("请先编辑文件路径");
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
 
-        complexModifyFileCopyBtn.addActionListener(e -> InformationDialog.INFO_DIALOG.showInfo("正在处理文件中..." , () -> complexModifyFileDirectoryManager.copyFiles(complexModifyFileCopyPathTextField.getText())));
+        complexModifyFileCopyBtn.addActionListener(e -> InformationDialog.INFO_DIALOG.showInfo("正在处理文件中..." , () -> {
+            if (complexModifyFileDirectoryManager != null) complexModifyFileDirectoryManager.copyFiles(complexModifyFileCopyPathTextField.getText());
+            else {
+                try {
+                    InformationDialog.INFO_DIALOG.setInfo("请先编辑文件路径");
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
 
-        complexModifyFileDeleteBtn.addActionListener(e -> InformationDialog.INFO_DIALOG.showInfo("正在处理文件中..." , () -> complexModifyFileDirectoryManager.deleteFiles()));
+        complexModifyFileDeleteBtn.addActionListener(e -> InformationDialog.INFO_DIALOG.showInfo("正在处理文件中..." , () -> {
+            if (complexModifyFileDirectoryManager != null) complexModifyFileDirectoryManager.deleteFiles();
+            else {
+                try {
+                    InformationDialog.INFO_DIALOG.setInfo("请先编辑文件路径");
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
 
 
     }
