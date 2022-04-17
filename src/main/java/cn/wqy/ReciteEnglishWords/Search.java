@@ -33,7 +33,7 @@ public class Search {
 
     public static SearchResult search(String english, boolean isFreeAPI) throws IOException {
         english = english.trim();
-        if (!english.matches("^(\\b[a-zA-Z]+\\s*\\b)+$")) {
+        if (!english.matches("^[a-zA-Z][a-zA-Z\\s.'()/]*$")) {
             InformationDialog.INFO_DIALOG.setInfo("请正确输入英文（不包括标点符号）");
             try {
                 Thread.sleep(1000);
