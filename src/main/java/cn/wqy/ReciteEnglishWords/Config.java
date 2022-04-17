@@ -121,7 +121,7 @@ public class Config {
         return "self".equals(ROOT.element("editWords").element("translationType").getText());
     }
 
-    public static void writeSettings(){
+    public static void applySettings(){
         XMLWriter writer = null;
         try {
             writer = new XMLWriter(new FileWriter(CONFIG_FILE));

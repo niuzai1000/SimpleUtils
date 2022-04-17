@@ -277,7 +277,7 @@ public class WordSettingPanel extends JPanel {
         Config.setAppKey(keyTextField.getText().trim());
         Config.setAppSecret(secretTextField.getText().trim());
         Config.setEnglishType(englishTypeRadioBtn.isSelected());
-        Config.writeSettings();
+        Config.applySettings();
     }
 
 }

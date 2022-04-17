@@ -3,7 +3,6 @@ package cn.wqy.ReciteEnglishWords;
 import cn.wqy.InformationDialog;
 import cn.wqy.SwingUtils.MySwingUtils;
 import cn.wqy.Task;
-import org.json.JSONArray;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +23,7 @@ public class WordEditPanel extends JPanel{
 
     private Word word;
 
-    private boolean isNewPanel = true;
+    private boolean isSaved = false;
 
     private final Box editDialogBox = Box.createVerticalBox();
 
@@ -203,35 +202,7 @@ public class WordEditPanel extends JPanel{
                         ex.printStackTrace();
                     }
                     if (result == null) return;
-                    reset();
-                    JSONArray translation = result.getTranslation();
-                    JSONArray explains = result.getExplains();
-                    InformationDialog.INFO_DIALOG.setInfo("设置官方翻译中...");
-                    StringBuilder builder = new StringBuilder();
-                    if (translation != null) {
-                        builder.append("翻译：");
-                        builder.append("\n");
-                        for (Object trans : translation) {
-                            builder.append("        ");
-                            builder.append(trans.toString());
-                            builder.append(";");
-                        }
-                        builder.deleteCharAt(builder.toString().length() - 1);
-                        officialExplainTextArea.setText(builder.toString());
-                    }
-                    officialExplainTextArea.append("\n");
-                    if (explains != null){
-                        officialExplainTextArea.append("解释：");
-                        officialExplainTextArea.append("\n");
-                        for (Object exp : explains){
-                            officialExplainTextArea.append("        ");
-                            officialExplainTextArea.append(exp.toString());
-                            officialExplainTextArea.append("\n");
-                        }
-                    }
-                    InformationDialog.INFO_DIALOG.setInfo("设置音标中...");
-                    if (result.getUk_phonetic() != null) pronunciationEnglishLabel.setText('/' + result.getUk_phonetic() + '/');
-                    if (result.getUs_phonetic() != null) pronunciationAmericanLabel.setText('/' + result.getUs_phonetic() + '/');
+                    update();
                 });
             }
         });
@@ -267,10 +238,10 @@ public class WordEditPanel extends JPanel{
         });
 
         nextBtn.addActionListener(e -> {
-            if (isNewPanel){
+            if (!isSaved){
                 save(() -> {
                     editNext();
-                    isNewPanel = false;
+                    isSaved = true;
                 });
             }else editNext();
         });
@@ -279,7 +250,7 @@ public class WordEditPanel extends JPanel{
 
         finishBtn.addActionListener(e -> finishWordEditPanel());
 
-        saveBtn.addActionListener(e -> save(null));
+        saveBtn.addActionListener(e -> save(() -> isSaved = true));
 
 
 
@@ -295,7 +266,6 @@ public class WordEditPanel extends JPanel{
     }
 
     private void save(Task task){
-        reset();
         if (!"".equals(wordTextField.getText().trim())){
             if (officialExplainRadioBtn.isSelected()){
                 if (result != null && result.getErrorCode() == 0){
@@ -338,12 +308,40 @@ public class WordEditPanel extends JPanel{
                 }
             });
         }
+        update();
     }
 
-    private void reset(){
+    private void update(){
         pronunciationEnglishLabel.setText("");
         pronunciationAmericanLabel.setText("");
         officialExplainTextArea.setText("");
+        if (result == null) return;
+        ArrayList<String> translation = result.getTranslation();
+        ArrayList<String> explains = result.getExplains();
+        StringBuilder builder = new StringBuilder();
+        if (translation != null) {
+            builder.append("翻译：");
+            builder.append("\n");
+            for (String trans : translation) {
+                builder.append("        ");
+                builder.append(trans);
+                builder.append(";");
+            }
+            builder.deleteCharAt(builder.toString().length() - 1);
+            officialExplainTextArea.setText(builder.toString());
+        }
+        officialExplainTextArea.append("\n");
+        if (explains != null){
+            officialExplainTextArea.append("解释：");
+            officialExplainTextArea.append("\n");
+            for (String exp : explains){
+                officialExplainTextArea.append("        ");
+                officialExplainTextArea.append(exp);
+                officialExplainTextArea.append("\n");
+            }
+        }
+        if (result.getUk_phonetic() != null) pronunciationEnglishLabel.setText('/' + result.getUk_phonetic() + '/');
+        if (result.getUs_phonetic() != null) pronunciationAmericanLabel.setText('/' + result.getUs_phonetic() + '/');
     }
 
     private void updatePageNumber(){
@@ -400,7 +398,9 @@ public class WordEditPanel extends JPanel{
 
     private void finishWordEditPanel(){
         AtomicBoolean legal = new AtomicBoolean(false);
-        wordEditPanels.get(wordEditPanels.size() - 1).save(() -> legal.set(true));
+        WordEditPanel wordEditPanel =  wordEditPanels.get(wordEditPanels.size() - 1);
+        if (!wordEditPanel.isSaved) wordEditPanel.save(() -> legal.set(true));
+        else legal.set(true);
         if (legal.get()){
             words.clear();
             for (WordEditPanel panel : wordEditPanels) words.add(panel.word);

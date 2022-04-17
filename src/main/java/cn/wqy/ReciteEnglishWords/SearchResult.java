@@ -7,7 +7,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
@@ -17,25 +16,26 @@ import ws.schild.jave.info.AudioInfo;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SearchResult {
 
     private final int errorCode;
 
-    private final JSONArray translation;
+    private final ArrayList<String> translation;
 
     private final String uk_phonetic;
 
     private final String us_phonetic;
 
-    private final JSONArray explains;
+    private final ArrayList<String> explains;
 
     private final File uk_speech_File;
 
     private final File us_speech_File;
 
-    public SearchResult(int errorCode, JSONArray translation, String uk_phonetic, String us_phonetic, String uk_speech_URL, String us_speech_URL , JSONArray explains) {
+    public SearchResult(int errorCode, ArrayList<String> translation, String uk_phonetic, String us_phonetic, HttpPost uk_speech_Post, HttpPost us_speech_Post , ArrayList<String> explains) {
         InformationDialog.INFO_DIALOG.setInfo("初始化搜索结果中...");
         this.errorCode = errorCode;
         this.translation = translation;
@@ -43,21 +43,20 @@ public class SearchResult {
         this.us_phonetic = us_phonetic;
         this.explains = explains;
 
-        if (uk_speech_URL != null) {
+        if (uk_speech_Post != null) {
             InformationDialog.INFO_DIALOG.setInfo("开始下载并转码音频...");
-            uk_speech_File = download(uk_speech_URL);
+            uk_speech_File = download(uk_speech_Post);
         }
         else uk_speech_File = null;
-        if (us_speech_URL != null) {
+        if (us_speech_Post != null) {
             InformationDialog.INFO_DIALOG.setInfo("开始下载并转码音频...");
-            us_speech_File = download(us_speech_URL);
+            us_speech_File = download(us_speech_Post);
         }
         else us_speech_File = null;
     }
 
-    private File download(String url){
+    private File download(HttpPost httpPost){
         CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost(url);
         CloseableHttpResponse httpResponse = null;
         InputStream is;
         OutputStream os = null;
@@ -115,7 +114,6 @@ public class SearchResult {
         AtomicBoolean interrupted = new AtomicBoolean(false);
         AtomicBoolean throwException = new AtomicBoolean(false);
         try {
-            encoder.encode(source, target, attrs);
             Thread thread = new Thread(new Runnable() {
                 private long beforeLength = 0;
                 private boolean finished = false;
@@ -132,6 +130,7 @@ public class SearchResult {
                 }
             });
             thread.start();
+            encoder.encode(source, target, attrs);
         } catch (EncoderException encoderException) {
             encoderException.printStackTrace();
         }
@@ -148,7 +147,7 @@ public class SearchResult {
         return errorCode;
     }
 
-    public JSONArray getTranslation() {
+    public ArrayList<String> getTranslation() {
         return translation;
     }
 
@@ -168,7 +167,7 @@ public class SearchResult {
         return us_speech_File;
     }
 
-    public JSONArray getExplains() {
+    public ArrayList<String> getExplains() {
         return explains;
     }
 }

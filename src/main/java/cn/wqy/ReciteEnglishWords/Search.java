@@ -10,11 +10,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -27,31 +27,40 @@ public class Search {
 
     private static final String YOUDAO_URL_NOT_FREE = "https://openapi.youdao.com/api";
 
-    private static final String YOUDAO_URL_FREE = "https://dict.youdao.com/dictvoice";
+    private static final String YOUDAO_URL_PRONUNCIATION_FREE = "https://dict.youdao.com/dictvoice";
 
-    public static SearchResult search(String word , boolean isFreeAPI) throws IOException {
-        if (!isFreeAPI){
-            String appKey = Config.getAppKey();
-            Map<String,String> params = new HashMap<>();
-            String salt = String.valueOf(System.currentTimeMillis());
-            params.put("from", "en");
-            params.put("to", "zh-CHS");
-            params.put("signType", "v3");
-            String curtime = String.valueOf(System.currentTimeMillis() / 1000);
-            params.put("curtime", curtime);
-            String signStr = appKey + truncate(word) + salt + curtime + Config.getAppSecret();
-            String sign = getDigest(signStr);
-            params.put("appKey", appKey);
-            params.put("q", word);
-            params.put("salt", salt);
-            params.put("sign", sign);
-            return requestForHttp(params);
-        }else {
-            return requestForPronunciation(word);
+    private static final String YOUDAO_URL_TRANSLATION_FREE = "https://fanyi.youdao.com/translate";
+
+    public static SearchResult search(String english, boolean isFreeAPI) throws IOException {
+        english = english.trim();
+        if (!english.matches("^(\\b[a-zA-Z]+\\s*\\b)+$")) {
+            InformationDialog.INFO_DIALOG.setInfo("请正确输入英文（不包括标点符号）");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
+        if (!isFreeAPI) return requestForNotFree(english);
+        else return requestForFree(english);
     }
 
-    private static SearchResult requestForHttp(Map<String, String> params) throws IOException {
+    private static SearchResult requestForNotFree(String english) throws IOException {
+        String appKey = Config.getAppKey();
+        Map<String,String> params = new HashMap<>();
+        String salt = String.valueOf(System.currentTimeMillis());
+        params.put("from", "en");
+        params.put("to", "zh-CHS");
+        params.put("signType", "v3");
+        String curtime = String.valueOf(System.currentTimeMillis() / 1000);
+        params.put("curtime", curtime);
+        String signStr = appKey + truncate(english) + salt + curtime + Config.getAppSecret();
+        String sign = getDigest(signStr);
+        params.put("appKey", appKey);
+        params.put("q", english);
+        params.put("salt", salt);
+        params.put("sign", sign);
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(YOUDAO_URL_NOT_FREE);
         List<NameValuePair> paramsList = new ArrayList<>();
@@ -81,15 +90,22 @@ public class Search {
                     return null;
                 }
             }
-            JSONArray translation = jsonObj.getJSONArray("translation");
-            JSONObject basic = jsonObj.getJSONObject("basic");
-            String uk_phonetic = basic.getString("uk-phonetic");
-            String us_phonetic = basic.getString("us-phonetic");
-            String uk_speech_URL = basic.getString("uk-speech");
-            String us_speech_URL = basic.getString("us-speech");
-            JSONArray explains = basic.getJSONArray("explains");
-            InformationDialog.INFO_DIALOG.setInfo("搜索成功");
-            return new SearchResult(errorCode , translation , uk_phonetic , us_phonetic , uk_speech_URL , us_speech_URL , explains);
+            ArrayList<String> translation = new ArrayList<>();
+            for (Object obj : jsonObj.getJSONArray("translation")) translation.add(obj.toString());
+            if (english.matches("^[a-zA-z]+$")){
+                JSONObject basic = jsonObj.getJSONObject("basic");
+                String uk_phonetic = basic.getString("uk-phonetic");
+                String us_phonetic = basic.getString("us-phonetic");
+                String uk_speech_URL = basic.getString("uk-speech");
+                String us_speech_URL = basic.getString("us-speech");
+                ArrayList<String> explains = new ArrayList<>();
+                for (Object obj : basic.getJSONArray("explains")) explains.add(obj.toString());
+                InformationDialog.INFO_DIALOG.setInfo("搜索成功");
+                return new SearchResult(0 , translation , uk_phonetic , us_phonetic , new HttpPost(uk_speech_URL) , new HttpPost(us_speech_URL) , explains);
+            }else{
+                InformationDialog.INFO_DIALOG.setInfo("搜索成功");
+                return new SearchResult(0 , translation , null , null , getUk_speech_Post(english) , getUs_speech_Post(english) , null);
+            }
         }catch (JSONException e){
             InformationDialog.INFO_DIALOG.setInfo("搜索失败");
             try {
@@ -100,7 +116,7 @@ public class Search {
             return null;
         }finally {
             try{
-                if(httpResponse!=null){
+                if(httpResponse != null){
                     httpResponse.close();
                 }
             }catch(IOException e){
@@ -109,15 +125,58 @@ public class Search {
         }
     }
 
-    private static SearchResult requestForPronunciation(String word){
-        String uk_speech_URL = YOUDAO_URL_FREE + "?audio=" + word + "&type=1";
-        String us_speech_URL = YOUDAO_URL_FREE + "?audio=" + word + "&type=2";
-        uk_speech_URL = uk_speech_URL.replaceAll(" " , "%20");
-        us_speech_URL = us_speech_URL.replaceAll(" " , "%20");
-        return new SearchResult(0 , null , null , null , uk_speech_URL , us_speech_URL , null);
+    private static SearchResult requestForFree(String english) throws IOException {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost(YOUDAO_URL_TRANSLATION_FREE);
+        List<NameValuePair> paramsList = new ArrayList<>();
+        paramsList.add(new BasicNameValuePair("doctype" , "json"));
+        paramsList.add(new BasicNameValuePair("type" , "AUTO"));
+        paramsList.add(new BasicNameValuePair("i" , english));
+        httpPost.setEntity(new UrlEncodedFormEntity(paramsList));
+        InformationDialog.INFO_DIALOG.setInfo("发送请求中...");
+        CloseableHttpResponse httpResponse = httpClient.execute(httpPost);
+        InformationDialog.INFO_DIALOG.setInfo("处理响应中...");
+        HttpEntity httpEntity = httpResponse.getEntity();
+        String json = EntityUtils.toString(httpEntity);
+        EntityUtils.consume(httpEntity);
+        JSONObject jsonObj = new JSONObject(json);
+        int errorCode = jsonObj.getInt("errorCode");
+        if (errorCode != 0){
+            InformationDialog.INFO_DIALOG.setInfo("搜索失败");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            try{
+                throw new JSONException("搜索失败");
+            }catch (JSONException e){
+                return null;
+            }
+        }
+        String trans = jsonObj.getJSONArray("translateResult").getJSONArray(0).getJSONObject(0).getString("tgt");
+        ArrayList<String> translation = new ArrayList<>();
+        translation.add(trans);
+        return new SearchResult(0 , translation , null , null , getUk_speech_Post(english) , getUs_speech_Post(english) , null);
     }
 
+    private static HttpPost getUk_speech_Post(String english) throws UnsupportedEncodingException {
+        HttpPost httpPost = new HttpPost(YOUDAO_URL_PRONUNCIATION_FREE);
+        List<NameValuePair> paramsList = new ArrayList<>();
+        paramsList.add(new BasicNameValuePair("audio" , english));
+        paramsList.add(new BasicNameValuePair("type" , "1"));
+        httpPost.setEntity(new UrlEncodedFormEntity(paramsList));
+        return httpPost;
+    }
 
+    private static HttpPost getUs_speech_Post(String english) throws UnsupportedEncodingException {
+        HttpPost httpPost = new HttpPost(YOUDAO_URL_PRONUNCIATION_FREE);
+        List<NameValuePair> paramsList = new ArrayList<>();
+        paramsList.add(new BasicNameValuePair("audio" , english));
+        paramsList.add(new BasicNameValuePair("type" , "2"));
+        httpPost.setEntity(new UrlEncodedFormEntity(paramsList));
+        return httpPost;
+    }
 
     /**
      * 生成加密字段

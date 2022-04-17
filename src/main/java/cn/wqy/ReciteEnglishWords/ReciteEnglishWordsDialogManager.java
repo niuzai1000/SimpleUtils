@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static java.awt.Dialog.ModalityType.DOCUMENT_MODAL;
@@ -81,8 +80,11 @@ public class ReciteEnglishWordsDialogManager{
                     File parentFile = new File(OpenWindow.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
                     File temp = new File(parentFile.getAbsoluteFile() + "\\temp");
                     File[] tempFiles = temp.listFiles();
-                    if (tempFiles != null) for (File file : tempFiles) if (!file.delete()) throw new IOException("无法删除文件");
-                } catch (IOException | URISyntaxException ex) {
+                    if (tempFiles != null) for (File file : tempFiles) {
+                        @SuppressWarnings("unused")
+                        boolean success = file.delete();
+                    }
+                } catch (URISyntaxException ex) {
                     ex.printStackTrace();
                 }
             }

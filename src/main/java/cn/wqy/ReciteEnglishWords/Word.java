@@ -7,7 +7,7 @@ public class Word {
 
     private final String word;
 
-    private ArrayList<String> translation = new ArrayList<>();
+    private final ArrayList<String> translation = new ArrayList<>();
 
     private final String uk_phonetic;
 
@@ -21,7 +21,7 @@ public class Word {
 
     public Word(String word, ArrayList<String> translation , File uk_speech_File , File us_speech_File) {
         this.word = word;
-        this.translation = translation;
+        this.translation.addAll(translation);
         this.uk_phonetic = null;
         this.us_phonetic = null;
         this.uk_speech_File = uk_speech_File;
@@ -34,8 +34,8 @@ public class Word {
         this.us_phonetic = result.getUs_phonetic();
         this.uk_speech_File = result.getUk_speech_File();
         this.us_speech_File = result.getUs_speech_File();
-        if (result.getTranslation() != null) for (Object tran : result.getTranslation()) translation.add(tran.toString());
-        if (result.getExplains() != null) for (Object exp : result.getExplains()) explains.add(exp.toString());
+        if (result.getTranslation() != null) translation.addAll(result.getTranslation());
+        if (result.getExplains() != null) explains.addAll(result.getExplains());
     }
 
     public String getWord() {
