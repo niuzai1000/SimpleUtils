@@ -28,6 +28,7 @@ public class AudioPlayer {
                     }
 
                     sd.drain();
+                    sd.stop();
                     sd.close();
                 }else {
                     InformationDialog.INFO_DIALOG.setInfo("加载失败...");
